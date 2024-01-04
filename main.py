@@ -1,7 +1,5 @@
 from bs4 import BeautifulSoup
 from urllib.request import Request, urlopen
-import pandas as pd
-import time
 from database_manager import connect_to_database, create_tables, insert_movie_data
 
 
@@ -27,7 +25,6 @@ def find_movies_and_store():
         page_html = uClient.read()
         uClient.close()
 
-
         print(f'\n\n{genre} genre\n\n')
         html_text = BeautifulSoup(page_html, "html.parser")
 
@@ -40,9 +37,7 @@ def find_movies_and_store():
                 movie_link = movie_link.rsplit('/', 1)[0]
                 movie_title = movies.find('h3', class_='ipc-title__text').text
 
-
                 movie_reviews_url = f"{root}{movie_link}/reviews?sort=submissionDate&dir=desc&ratingFilter=0"
-                # print(f'{index}. {movie_title}\n{movie_link}\n{movie_reviews_url}\n')
                 req_reviews = Request(movie_reviews_url, headers=headers)
                 uClient_reviews = urlopen(req_reviews)
                 page_html_reviews = uClient_reviews.read()
@@ -55,21 +50,30 @@ def find_movies_and_store():
                 movie_review_title = reviews.find('a', class_='title').text.strip()
                 movie_review_url = f"{review_url}"
                 review_content = html_text_reviews.find('div', class_='text show-more__control').text
-                # print(f'Title: {movie_title}\nReview: {movie_review_title}\nReview Link: {movie_review_url}\nReview Content: {review_content}\n')
-
 
                 movie_data.append({
                     "Movie Number": index + (page_number - 1) * 20,
                     "Movie Title": movie_title,
                     "Movie Link": f"{root}{movie_link}",
                     "Review": f"{movie_review_title}",
-                    "Review content":f"{review_content}",
+                    "Review content": f"{review_content}",
                     "Review Link": f"{root}{movie_review_url}"
                 })
-                print('writing...')
 
-            insert_movie_data(connection, genre, movie_data)
-            print('wrote')
+            next_page_link = html_text.find('a', {'class': 'next-page'})
+            if not next_page_link:
+                break
+
+            next_page_url = root + next_page_link['href']
+            req = Request(next_page_url, headers=headers)
+            uClient = urlopen(req)
+            page_html = uClient.read()
+            uClient.close()
+            html_text = BeautifulSoup(page_html, "html.parser")
+            page_number += 1
+
+        insert_movie_data(connection, genre, movie_data)
     connection.close()
+
 
 find_movies_and_store()
