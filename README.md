@@ -42,4 +42,7 @@ This project scrapes IMDb's top movies for various genres, fetches their reviews
 - **`database_manager.py`:** Manages SQLite database creation and data insertion.
 - **`requirements.txt`:** Lists project dependencies.
 
+## Viewing Database Diagram
+
+- For viewing the database diagram, open the `draw.io` tool and import the `Database_Diagram` file located in the project root directory.
 
