@@ -26,7 +26,7 @@ def find_movies_and_store():
         uClient.close()
 
         print(f'\n\n{genre} genre\n\n')
-        html_text = BeautifulSoup(page_html, "html.parser")
+        html_text = BeautifulSoup(page_html, "lxml")
 
         movie_data = []
         page_number = 1
@@ -43,7 +43,7 @@ def find_movies_and_store():
                 page_html_reviews = uClient_reviews.read()
                 uClient_reviews.close()
 
-                html_text_reviews = BeautifulSoup(page_html_reviews, "html.parser")
+                html_text_reviews = BeautifulSoup(page_html_reviews, "lxml")
                 reviews = html_text_reviews.find('div', class_='review-container')
 
                 review_url = reviews.find('a', class_='title').attrs['href']
@@ -69,7 +69,7 @@ def find_movies_and_store():
             uClient = urlopen(req)
             page_html = uClient.read()
             uClient.close()
-            html_text = BeautifulSoup(page_html, "html.parser")
+            html_text = BeautifulSoup(page_html, "lxml")
             page_number += 1
 
         insert_movie_data(connection, genre, movie_data)
