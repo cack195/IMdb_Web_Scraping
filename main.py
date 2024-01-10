@@ -18,7 +18,7 @@ def find_movies_and_store():
         root = 'https://www.imdb.com/'
         my_url = f"{root}chart/top/?genres={genre}"
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (HTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
         }
         req = Request(my_url, headers=headers)
         uClient = urlopen(req)
@@ -29,7 +29,6 @@ def find_movies_and_store():
         html_text = BeautifulSoup(page_html, "lxml")
 
         movie_data = []
-        page_number = 1
         while True:
             movies_list = html_text.find_all('li', class_='ipc-metadata-list-summary-item')
             for index, movies in enumerate(movies_list[:20], 1):
@@ -50,29 +49,16 @@ def find_movies_and_store():
                 movie_review_title = reviews.find('a', class_='title').text.strip()
                 movie_review_url = f"{review_url}"
                 review_content = html_text_reviews.find('div', class_='text show-more__control').text
-
+                print(f'Collecting Movie {index}')
                 movie_data.append({
-                    "Movie Number": index + (page_number - 1) * 20,
+                    "Movie Number": index,
                     "Movie Title": movie_title,
                     "Movie Link": f"{root}{movie_link}",
                     "Review": f"{movie_review_title}",
                     "Review content": f"{review_content}",
                     "Review Link": f"{root}{movie_review_url}"
                 })
-
-            next_page_link = html_text.find('a', {'class': 'next-page'})
-            if not next_page_link:
-                break
-
-            next_page_url = root + next_page_link['href']
-            req = Request(next_page_url, headers=headers)
-            uClient = urlopen(req)
-            page_html = uClient.read()
-            uClient.close()
-            html_text = BeautifulSoup(page_html, "lxml")
-            page_number += 1
-
-        insert_movie_data(connection, genre, movie_data)
+            insert_movie_data(connection, genre, movie_data)
     connection.close()
 
 
